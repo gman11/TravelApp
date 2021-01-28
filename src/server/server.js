@@ -1,3 +1,12 @@
+//http://api.geonames.org/searchJSON?q=london&maxRows=10&username=gman9911
+//get country picture from API
+//calculate days to trip
+//get weather prediction for the date from API
+app.get('/', function (req, res) {
+  res.sendFile('dist/index.html')
+})
+
+
 // Setup empty JS object to act as endpoint for all routes
 projectData = {};
 
@@ -19,10 +28,11 @@ const cors = require("cors");
 app.use(cors());
 
 // Initialize the main project folder
-app.use(express.static("website"));
+app.use(express.static("dist"));
+
 
 // Setup Server
-const port = 8000;
+const port = 8081;
 
 const server = app.listen(port, listening);
 function listening() {
