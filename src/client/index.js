@@ -1,11 +1,9 @@
 import { addFlight } from './js/addFlight.js';
-//import { remove } from './js/index.js';
+import { remove } from './js/addFlight.js';
 
-alert("yeah!!");
 import './styles/styles.scss';
-
+document.querySelector("#submit").addEventListener("click", addFlight);
 //change to to correct function names
 export {
-    addFlight,
-    //remove
+    addFlight, remove
 };
