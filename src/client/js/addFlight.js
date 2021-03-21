@@ -1,11 +1,10 @@
+var index = 1;
 function addFlight(event) {
   console.log("adding flight");
   //get data from server
-
-
   const from = document.getElementById("from").value;
   const to = document.getElementById("to").value;
-  const date = document.getElementById("date").value;
+  const date = document.getElementById("date").valueAsDate;
 
   let validation = true;
   //validations
@@ -50,66 +49,37 @@ function addFlight(event) {
         return res.json()
       })
       .then(function (data) {
-        // document.getElementById('results').innerHTML = data.message
         flightDetails = data;
 
         //console.log(flightDetails);
         console.log(flightDetails);
-        //create flight div
-        const flightDiv = document.createElement("div");
-        flightDiv.className = "flights";
-
-        //create pic div
-        const picDiv = document.createElement("div");
-        picDiv.className = "flightPic";
-        const countryPic = document.createElement("img");
-        countryPic.src = flightDetails[1];
-        picDiv.appendChild(countryPic);
-
-        //create data
-        const flightDataDiv = document.createElement("div");
-        const flightDataInnerDiv = document.createElement("div");
-        flightDataDiv.className = "flightContainerData";
-        flightDataInnerDiv.className = "flightData";
-        const flightData = document.createElement("p");
-        flightData.textContent = "Flight from " + from + " to " + to;
-        const flightDate = document.createElement("p");
-        flightDate.textContent = "Departure: " + date;
-        const flightDays = document.createElement("p");
-        flightDays.textContent = to + " is " + daysDiff.toFixed(0) + " days away.";
-        const flightWeather = document.createElement("p");
-        flightWeather.textContent = "Weather will be " + flightDetails[0] + " °F";
-        flightDataInnerDiv.appendChild(flightData);
-        flightDataInnerDiv.appendChild(flightDate);
-        flightDataInnerDiv.appendChild(flightDays);
-        flightDataInnerDiv.appendChild(flightWeather);
-
-        //buttons
-        const buttonsDiv = document.createElement("div");
-        const btnRemove = document.createElement("button");
-        btnRemove.type = "button"
-        btnRemove.innerText = "Remove";
-        btnRemove.onclick = remove;
-        buttonsDiv.appendChild(btnRemove);
-
-        const btnSave = document.createElement("button");
-        btnSave.type = "button"
-        btnSave.innerText = "Save";
-        btnSave.onclick = function () { console.log("save offline"); };
-        buttonsDiv.appendChild(btnSave);
-        flightDataInnerDiv.appendChild(buttonsDiv);
-        flightDataDiv.appendChild(picDiv);//.countryPic);
-        flightDataDiv.appendChild(flightDataInnerDiv);
 
 
+        var htmlInput = `<div class="flightContainer">
+          <div class="picture">
+            <img src="${flightDetails[1]}" alt="Destination Picture">
+          </div>
+          <div class="details">
+            <div class="flightInfo">
+              <ul>
+                <li>Fligh from ${from} to ${to}</li>
+                <li>Departure date  ${date.toLocaleDateString()} </li>
+                <li>Your flight is in ${daysDiff.toFixed(0)} days</li>
+                <li>Weather will be  ${flightDetails[0]}°F</li>
+                <li><button id="remove_${index}" class="remove">Remove</button></li>
+              </ul>
+            </div>
+          </div>
+        </div>`;
 
-        //flightDataDiv.appendChild(btnRemove);
-        //flightDiv.appendChild(picDiv);
-        flightDiv.appendChild(flightDataDiv);
-        //flightDiv.appendChild(flightDate);
-        //flightDiv.appendChild(buttonsDiv);
+        var main = document.getElementById('main');
+        main.insertAdjacentHTML("afterbegin", htmlInput);
 
-        document.getElementById('main').appendChild(flightDiv);
+        var button = document.getElementById("remove_" + index);
+        button.onclick = remove;
+
+        index = index + 1;
+
       })
   }
 }
@@ -117,7 +87,9 @@ function addFlight(event) {
 function remove(e) {
   console.log("inside remove");
   console.log(e);
-  e.path[4].remove(); //remove select fligh
+  console.log("thuis");
+  console.log(this);
+  e.path[5].remove(); //remove select fligh
   e.path[0].remove(); //remove itselft
 }
 

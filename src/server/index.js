@@ -40,74 +40,93 @@ app.get('/', function (req, res) {
 
 let tripData = [];
 
+///get cordinates of requestedc place
+///Parmans:  country  
+const getCordinates = async (country) => {
+  console.log("inside getCordinates" + country);
+  const url = 'http://api.geonames.org/searchJSON?q=' + country + '&maxRows=10&username=' + process.env.API_ID;
+  const response = await fetch(url, {
+    method: "GET", // *GET, POST, PUT, DELETE, etc.
+    credentials: "same-origin", // include, *same-origin, omit
 
-
-const getData = async (req, res) => {
-  console.log("getting cordinates");
-  let country = req.body.country;
-  let daysDiff = req.body.days;
-
-
+  });
+  const data = await response.json();
+  return data;
+};
+///get weather data
+///param:  latitude, longitute, and daysDiff
+const getWeather = async (lat, lng, daysDiff) => {
+  console.log("insde weather " + lat + " " + lng + " " + daysDiff);
   let baseWeatherUrl = 'https://api.weatherbit.io/v2.0/current?'
   // ˚  console.log(daysDiff);
   if (daysDiff > 7) {
 
     baseWeatherUrl = 'https://api.weatherbit.io/v2.0/forecast/daily?';
   }
+  baseWeatherUrl = baseWeatherUrl + 'lat=' + lat + '&lon=' + lng + '&units=I&key=' + process.env.Weather_API;
+  const response = await fetch(baseWeatherUrl, {
+    method: "GET",
+    credentials: "same-origin",
+  });
+  const data = await response.json();
+  return data;
+};
+///get Picture
+//Params: country
+const getPicture = async (country) => {
+  console.log("inside picture " + country);
+  let pixUrl = `https://pixabay.com/api/?key=${process.env.Pixabay_API}&q=${country}+city&image_type=photo&pretty=true&min_width=640`;
+  const response = await fetch(pixUrl, {
+    method: "GET",
+    credentials: "same-origin",
+  });
+  const data = await response.json();
+  return data;
+};
 
-  //clear trypdata
-  tripData = [];
-  //post route
-  const urlTest = 'http://api.geonames.org/searchJSON?q=' + country + '&maxRows=10&username=' + process.env.API_ID;
+async function getAllData(req, res) {
+  try {
 
+    //clear trypdata
+    tripData = [];
 
-  const response = await fetch(urlTest, {
-    method: "GET", // *GET, POST, PUT, DELETE, etc.
-    credentials: "same-origin", // include, *same-origin, omit
-    // headers: {
-    //   "Content-Type": "application/json",
-    // },
-    //body: JSON.stringify(data), // body data type must match "Content-Type" header
-  })
-    .then(response => response.json())
-    .then(data => {
+    let cordinates = await getCordinates(req.body.country);
+    console.log(cordinates);
 
-      let lat = data.geonames[0].lat;
-      let lng = data.geonames[0].lng;
+    //get weather
+    let weather = await getWeather(cordinates.geonames[0].lat, cordinates.geonames[0].lng, req.body.days);
+    console.log(weather);
+    //push weather data
+    let days = req.body.days;
 
-      baseWeatherUrl = baseWeatherUrl + 'lat=' + lat + '&lon=' + lng + '&units=I&key=' + process.env.Weather_API;
-      const response = fetch(baseWeatherUrl, {
-        method: "GET",
-        credentials: "same-origin",
-      }).then(response => response.json())
-        .then(data => {
-          //res.json(data);
-          tripData.push(data.data[0].temp);
-          //get picture
-          let pixUrl = 'https://pixabay.com/api/?key=' + process.env.Pixabay_API + '&q=' + country + '+city&image_type=photo&pretty=true';
-          const response = fetch(pixUrl, {
-            method: "GET",
-            credentials: "same-origin",
-          }).then(response => response.json())
-            .then(data => {
+    if (days > 7) {
+      // Push the last day of the forecast
+      tripData.push(weather.data[15].temp);
+    } else {
+      tripData.push(weather.data[0].temp);
+    }
 
-              try {
-                let pic = data.hits[0].webformatURL;
-                tripData.push(pic);
+    //get pic
+    let picture = await getPicture(req.body.country);
+    console.log(picture);
 
-              } catch {
-                tripData.push("https://via.placeholder.com/150");
+    try {
 
-              }
+      let pic = picture.hits[0].webformatURL;
+      tripData.push(pic);
 
+    } catch {
+      tripData.push("https://via.placeholder.com/150");
+    }
 
-              res.json(tripData);
-
-            });
-
-        });
-
-    });
+    res.json(tripData);
+  }
+  catch (err) {
+    console.log("something bad happen");
+  }
 
 }
-app.post("/getData", getData);
+//enable this export for jtest
+module.exports = { getPicture };
+
+app.post("/getData", getAllData);
